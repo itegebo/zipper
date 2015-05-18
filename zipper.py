@@ -1,4 +1,92 @@
+"""
+TODO Investigate deques for pnodes
+TODO Document required operations for node and children types
+TODO Bidirectional traversals
+TODO Traversals implement Iterable
+TODO Named locations
+TODO Location-based transformations, i.e. Functions of "Contexts"
+TODO Define Zipper, Location, and Node as separate abstractions
+TODO Play with a Node class to capture key-val, and heterogeneous Iterable types
+TODO Define a Node class that support lazy children
+TODO Enable Node to have efficient rightmost if underlying type supports it
+
+In Clojure, the k-v pair has type MapEntry whereas Python refers to "items" without there actually being an Item type,
+they're just 2-tuples.
+
+To support laziness, we'll define a Children class that's responsible for the next child whereas Locations are
+responsible for caching already seen elements - where we wrap a type's elements in the Node class.  To support
+structures that a purely computational, e.g. Pascal's Triangle, we should pass the current Location to the Children
+class' "next" method s.t. the method can use the entire structure as a means to determine the next element.  In the
+case where Children is really an iterable, it will check the Location for whether the Node already was created, failing
+that calls next() followed by the Node constructor to be handed back, to say, the Zipper's "right" method.
+
+We want to allow parameterization of what constitutes a "Node" s.t. a general Python data zipper may both be defined
+and then configured to consider some types as leaves when they otherwise could be considered branches, e.g. str's.  So,
+we'll define Nodes for the builtin types; the first element of a dictionary's items will be a tuple wrapped in a Node
+that knows it can produce 2 children being referred to as a 'key' and 'value' whose Node.name is 'item'.
+
+Should 'l' and 'r' be 'Children' containers?
+  * you'd need to define deque-like operations over them
+  * operations: first, last, butlast, butfirst: aka popleft, pop - except those are mutations
+
+Contexts
+
+A set of Location predicates is a "context".  Being able to specify a set of things that are true about a Location
+ enables one to consider different parts of the tree/graph that must exist and then how to transform a node based on
+ those parts of the tree/graph.  Examples: computing Fibonacci, determining a directory is a "project directory",
+ evaluating a particular expression in a program, determining the kind of object in an object graph.
+
+"""
 from collections import namedtuple
+
+
+class Node:
+    def children(self): pass
+
+    def content(self): pass
+
+
+class Children:
+    """Abstract the deque-like operations over children needed by Locations"""
+    def __init__(self, data):
+        self.data = data
+
+    def first(self):
+        return Node(self.data.first()), Children(self.data.butfirst())
+
+    def last(self):
+        return Children(self.data.butlast()), Node(self.data.last())
+
+
+class IndexableData:
+    def __init__(self, data):
+        self.d = data
+
+    def first(self):
+        return self.d[0]
+
+    def butfirst(self):
+        return self.d[1:]
+
+    def last(self):
+        return self.d[-1]
+
+    def butlast(self):
+        return self.d[:-1]
+
+class StringNode(Node):
+    def __init__(self, s, isleaf=False):
+        self.content = s
+        self.isleaf = isleaf
+
+    @property
+    def children(self):
+        if self.isleaf:
+            return False
+        else:
+            return Children(IndexableData(self.content))
+
+
 
 Path = namedtuple('Path', 'l, r, pnodes, ppath, changed')
 
@@ -44,7 +132,15 @@ def zipper(root, is_branch, children, make_node):
 
 # We use namedtuple's _replace, so tell PyCharm not to warn about it
 # noinspection PyProtectedMember
+# FIXME Loc is really a Zipper whereas Path is Location
 class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
+    """
+    current: T
+    path: Path
+    branch: Fn(T) -> bool
+    get_children: Fn(T) -> Iterable
+    make_node: Fn(T, Iterable[T]) -> T?
+    """
     def __repr__(self):
         return "<zipper.Loc({}) object at {}>".format(self.current, id(self))
 
@@ -84,7 +180,7 @@ class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
                 pnode = pnodes[-1]
                 if changed:
                     return self._replace(
-                        current=self.make_node(pnode, l + (self.current,) + r),
+                        current=self.make_node(pnode, l + (self.current,) + r),  # assumes __add__ on children
                         path=ppath and ppath._replace(changed=True)
                     )
                 else:
@@ -121,8 +217,8 @@ class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
     def left(self):
         if self.path and self.path.l:
             ls, r = self.path[:2]
-            l, current = ls[:-1], ls[-1]
-            return self._replace(current=current, path=self.path._replace(
+            l, next_left = ls[:-1], ls[-1]
+            return self._replace(current=next_left, path=self.path._replace(
                 l=l,
                 r=(self.current,) + r
             ))
@@ -343,6 +439,7 @@ class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
         else:
             return self._replace(current=value)
 
+    # TODO Take a traversal, a direction, and a predicate
     def find(self, func):
         loc = self.leftmost_descendant()
         while True:
