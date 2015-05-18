@@ -5,7 +5,7 @@ import zipper
 def test_zipper_list_tree():
     tree = [20, [0, 1], 4, [5, 6, [7, 8]]]
 
-    loc = zipper.list(tree)
+    loc = zipper.fromlist(tree)
 
     # the current node() is the entire tree
     eq_(loc.node(), tree)
@@ -37,11 +37,11 @@ def test_zipper_list_tree():
 
 def test_zipper_dict_tree():
     tree = dict(left=dict(left=1, right=2), right=3)
-    loc = zipper.dict(tree)
+    ok_(zipper.fromdict(tree))
 
 
 def test_leftmost_descendant():
-    top = zipper.list([[[1], 2], [3], 4])
+    top = zipper.fromlist([[[1], 2], [3], 4])
     eq_(
         top.leftmost_descendant().node(),
         1
@@ -49,13 +49,13 @@ def test_leftmost_descendant():
 
 
 def test_rightmost_descendant():
-    top = zipper.list([[[1], 2], [3], 4])
+    top = zipper.fromlist([[[1], 2], [3], 4])
     eq_(
         top.rightmost_descendant().node(),
         4
     )
 
-    top = zipper.list([[[1], 2], [3], [4, [5, 6]]])
+    top = zipper.fromlist([[[1], 2], [3], [4, [5, 6]]])
     eq_(
         top.rightmost_descendant().node(),
         6
@@ -68,7 +68,7 @@ def test_rightmost_descendant():
 
 
 def test_preorder_iter():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
     eq_(
         [n.node() for n in top.preorder_iter()],
         [1, [2, 3], 2, 3, 4, [1, [2, 3], 4]]
@@ -76,7 +76,7 @@ def test_preorder_iter():
 
 
 def test_postorder_iter():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
 
     eq_(
         [n.node() for n in top.postorder_iter()],
@@ -85,7 +85,7 @@ def test_postorder_iter():
 
 
 def test_leftmost():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
 
     # the top of the tree is the left most node at this level
     eq_(
@@ -100,7 +100,7 @@ def test_leftmost():
 
 
 def test_rightmost():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
 
     # the top of the tree is the left most node at this level
     eq_(
@@ -115,7 +115,7 @@ def test_rightmost():
 
 
 def test_insert_left():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
     # can't insert at the top
     assert_raises(IndexError, top.insert_left, 0)
 
@@ -126,7 +126,7 @@ def test_insert_left():
 
 
 def test_insert_right():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
     # can't insert at the top
     assert_raises(IndexError, top.insert_right, 5)
 
@@ -142,7 +142,7 @@ def test_insert_right():
 
 
 def test_replace():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
 
     eq_(
         top.replace([9]).root(),
@@ -156,7 +156,7 @@ def test_replace():
 
 
 def test_insert():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
     eq_(
         top.insert(0).root(),
         [0, 1, [2, 3], 4]
@@ -164,7 +164,7 @@ def test_insert():
 
 
 def test_append():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
     eq_(
         top.append(5).root(),
         [1, [2, 3], 4, 5]
@@ -172,7 +172,7 @@ def test_append():
 
 
 def test_remove():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
 
     # can't remove top node
     assert_raises(IndexError, top.remove)
@@ -187,7 +187,7 @@ def test_remove():
         [1, [3], 4]
     )
 
-    top = zipper.list([[[1.1, 1.2], 1.3], 2, 3, 4])
+    top = zipper.fromlist([[[1.1, 1.2], 1.3], 2, 3, 4])
 
     eq_(
         top.down().down().right().node(),
@@ -201,7 +201,7 @@ def test_remove():
 
 
 def test_edit():
-    top = zipper.list([1, [2, 3], 4])
+    top = zipper.fromlist([1, [2, 3], 4])
 
     eq_(
         top.down().edit(lambda node, k: node + k, 1).root(),
@@ -210,7 +210,7 @@ def test_edit():
 
 
 def test_move_to():
-    top = zipper.list([1, [2, 3, [4, [5, 6]]], [7, 8]])
+    top = zipper.fromlist([1, [2, 3, [4, [5, 6]]], [7, 8]])
 
     n = top.down().right().down().right().right().down()
     eq_(
@@ -231,7 +231,7 @@ def test_move_to():
 
 
 def test_ancestor():
-    top = zipper.list([1, [2, 3, [4, [5, 6]]], [7, 8]])
+    top = zipper.fromlist([1, [2, 3, [4, [5, 6]]], [7, 8]])
 
     n = top.down().right().down().right().right().down().right().down()
     eq_(
@@ -269,7 +269,7 @@ def test_ancestor():
 
 
 def test_find():
-    top = zipper.list([1, [2, 3, [4, [5, 6]]], [7, 8]])
+    top = zipper.fromlist([1, [2, 3, [4, [5, 6]]], [7, 8]])
 
     loc = top.find(lambda loc: loc.node() == 7)
 

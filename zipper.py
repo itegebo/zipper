@@ -16,29 +16,25 @@ def isa(type):
     return f
 
 
-native_list = __builtins__['list']
-
-
-def list(root):
+def fromlist(root):
     return zipper(
         root,
-        isa(native_list),
+        isa(list),
         tuple,
-        lambda node, children: native_list(children)
+        lambda node, children: list(children)
     )
 
 
-native_dict = __builtins__['dict']
-is_dict = isa(native_dict)
+is_dict = isa(dict)
 
 
-def dict(root):
+def fromdict(root):
     return zipper(
         root,
         # i is either the root object or a tuple of key value pairs
         lambda i: i is is_dict(root) or is_dict(i[1]),
         lambda i: tuple(i.items() if i is is_dict(i) else i[1].items()),
-        lambda node, children: native_dict(children)
+        lambda node, children: dict(children)
     )
 
 

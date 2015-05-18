@@ -15,7 +15,7 @@ represents the current focal point in the tree.
 
 ```
 >>> import zipper
->>> top = zipper.list([1, [2, 3], 4])
+>>> top = zipper.fromlist([1, [2, 3], 4])
 
 >>> print top.down().right().node()
 [2,3]
