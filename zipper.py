@@ -46,7 +46,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
     def __repr__(self):
         return "<zipper.Loc({}) object at {}>".format(self.current, id(self))
 
-    ## Context
+    # Context
     def node(self):
         return self.current
 
@@ -63,7 +63,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
     def at_end(self):
         return not bool(self.path)
 
-    ## Navigation
+    # Navigation
     def down(self):
         children = self.children()
         if children:
@@ -156,7 +156,6 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
         else:
             return self
 
-
     def right(self):
         if self.path and self.path.r:
             l, rs = self.path[:2]
@@ -165,7 +164,6 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
                 l=l + (self.current,),
                 r=rnext
             ))
-
 
     def leftmost_descendant(self):
         loc = self
@@ -215,8 +213,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
 
         return loc
 
-
-    ## Enumeration
+    # Enumeration
     def preorder_iter(self):
         loc = self
         while loc:
@@ -261,7 +258,6 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
                     else:
                         return u._replace(path=())
 
-
     def postorder_next(self):
         """
         Visit's nodes in depth-first post-order.
@@ -285,7 +281,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
         """
 
         r = self.right()
-        if (r):
+        if r:
             return r.leftmost_descendant()
         else:
             return self.up()
@@ -297,8 +293,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
             yield loc
             loc = loc.postorder_next()
 
-
-    ## editing
+    # editing
     def append(self, item):
         """
         Inserts the item as the rightmost child of the node at this loc,
@@ -309,7 +304,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
         )
 
     def edit(self, f, *args):
-        "Replace the node at this loc with the value of f(node, *args)"
+        """Replace the node at this loc with the value of f(node, *args)"""
         return self.replace(f(self.current, *args))
 
     def insert(self, item):
@@ -321,7 +316,6 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
             self.make_node(self.node(), (item,) + self.children())
         )
 
-
     def insert_left(self, item):
         """Insert item as left sibling of node without moving"""
         path = self.path
@@ -330,7 +324,6 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
 
         new = path._replace(l=path.l + (item,), changed=True)
         return self._replace(path=new)
-
 
     def insert_right(self, item):
         """Insert item as right sibling of node without moving"""
@@ -393,6 +386,3 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
                 current=self.make_node(pnodes[-1], r),
                 path=ppath and ppath._replace(changed=True)
             )
-
-
-
