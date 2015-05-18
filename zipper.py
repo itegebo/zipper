@@ -16,9 +16,9 @@ def isa(atype):
     return f
 
 
-def fromlist(root):
+def fromlist(alist):
     return zipper(
-        root,
+        alist,
         isa(list),
         tuple,
         lambda node, children: list(children)
@@ -28,11 +28,11 @@ def fromlist(root):
 is_dict = isa(dict)
 
 
-def fromdict(root):
+def fromdict(adict):
     return zipper(
-        root,
+        adict,
         # i is either the root object or a tuple of key value pairs
-        lambda i: i is is_dict(root) or is_dict(i[1]),
+        lambda i: i is is_dict(adict) or is_dict(i[1]),
         lambda i: tuple(i.items() if i is is_dict(i) else i[1].items()),
         lambda node, children: dict(children)
     )
