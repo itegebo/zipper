@@ -44,7 +44,7 @@ def zipper(root, is_branch, children, make_node):
 
 # We use namedtuple's _replace, so tell PyCharm not to warn about it
 # noinspection PyProtectedMember
-class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')):
+class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
     def __repr__(self):
         return "<zipper.Loc({}) object at {}>".format(self.current, id(self))
 
@@ -54,11 +54,11 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
 
     def children(self):
         # TODO What happens if you call children on a non-branch?
-        if self.branch():
+        if self.is_branch():
             return self.get_children(self.current)
 
-    def branch(self):
-        return self.is_branch(self.current)
+    def is_branch(self):
+        return self.branch(self.current)
 
     def root(self):
         return self.top().current
@@ -170,7 +170,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
 
     def leftmost_descendant(self):
         loc = self
-        while loc.branch():
+        while loc.is_branch():
             d = loc.down()
             if d:
                 loc = d
@@ -181,7 +181,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
 
     def rightmost_descendant(self):
         loc = self
-        while loc.branch():
+        while loc.is_branch():
             d = loc.down()
             if d:
                 loc = d.rightmost()
