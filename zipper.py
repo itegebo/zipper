@@ -3,16 +3,16 @@ from collections import namedtuple
 Path = namedtuple('Path', 'l, r, pnodes, ppath, changed')
 
 
-def isa(type):
+def isa(atype):
     """
     Returns is_<type>(obj) a function that returns true
     when it's argument is the istance of type
     """
 
     def f(obj):
-        return isinstance(obj, type)
+        return isinstance(obj, atype)
 
-    f.__name__ = "is_{0}".format(type)
+    f.__name__ = "is_{0}".format(atype)
     return f
 
 
@@ -96,21 +96,21 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
             loc = loc.up()
         return loc
 
-    def ancestor(self, filter):
+    def ancestor(self, predicate):
         """
         Return the first ancestor preceding the current loc that
-        matches the filter(ancestor) function.
+        matches the predicate(ancestor) function.
 
-        The filter function is invoked with the location of the
-        next ancestor. If the filter function returns true then
+        The predicate function is invoked with the location of the
+        next ancestor. If the predicate function returns true then
         the ancestor will be returned to the invoker of
-        loc.ancestor(filter) method. Otherwise the search will move
+        loc.ancestor(predicate) method. Otherwise the search will move
         to the next ancestor until the top of the tree is reached.
         """
 
         u = self.up()
         while u:
-            if filter(u):
+            if predicate(u):
                 return u
             else:
                 u = u.up()
