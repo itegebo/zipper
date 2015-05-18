@@ -42,6 +42,8 @@ def zipper(root, is_branch, children, make_node):
     return Loc(root, None, is_branch, children, make_node)
 
 
+# We use namedtuple's _replace, so tell PyCharm not to warn about it
+# noinspection PyProtectedMember
 class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')):
     def __repr__(self):
         return "<zipper.Loc({}) object at {}>".format(self.current, id(self))
@@ -51,6 +53,7 @@ class Loc(namedtuple('Loc', 'current, path, is_branch, get_children, make_node')
         return self.current
 
     def children(self):
+        # TODO What happens if you call children on a non-branch?
         if self.branch():
             return self.get_children(self.current)
 
