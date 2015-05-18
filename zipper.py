@@ -60,9 +60,6 @@ class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
     def is_branch(self):
         return self.branch(self.current)
 
-    def root(self):
-        return self.top().current
-
     def at_end(self):
         return not bool(self.path)
 
@@ -98,6 +95,9 @@ class Loc(namedtuple('Loc', 'current, path, branch, get_children, make_node')):
         while loc.path:
             loc = loc.up()
         return loc
+
+    def root(self):
+        return self.top().node()
 
     def ancestor(self, predicate):
         """
